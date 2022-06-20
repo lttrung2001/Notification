@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.widget.Button
@@ -16,12 +17,17 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        private const val CHANNEL_ID = "Channel test"
+        private var NOTIFICATION_ID = 0
+        private const val name = "Channel test"
+        private const val descriptionText = "test notification"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        val CHANNEL_ID = "test"
-        val NOTIFICATION_ID = 0
+        createNotificationChannel()
 
         val btnNotify = findViewById<Button>(R.id.btn_notify)
         btnNotify.setOnClickListener {
@@ -64,22 +70,33 @@ class MainActivity : AppCompatActivity() {
                     .addRemoteInput(remoteInput)
                     .build()
 
+            val bitmap =
+                BitmapFactory.decodeResource(resources, R.drawable.me)
             // Build
             val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setSmallIcon(R.drawable.me)
                 .setContentTitle("Notification")
-                .setContentText("Click to open browser")
+                .setContentText("Click to open browser $NOTIFICATION_ID")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setColor(resources.getColor(R.color.purple_200, resources.newTheme()))
+                    // Set long paragraph in content
+//                .setStyle(
+//                    NotificationCompat.BigTextStyle().bigText(resources.getText(R.string.content))
+//                )
+                    // Set large image in content
+                .setStyle(NotificationCompat.BigPictureStyle().bigPicture(bitmap))
+                // Add button
                 .setContentIntent(pendingIntent)
                 .addAction(
                     R.drawable.ic_launcher_foreground, "Snooze",
                     snoozePendingIntent
                 )
+                // Add actions
                 .addAction(action)
                 .setAutoCancel(true)
             with(NotificationManagerCompat.from(this)) {
                 // notificationId is a unique int for each notification that you must define
-                notify(NOTIFICATION_ID, builder.build())
+                notify(NOTIFICATION_ID++, builder.build())
             }
         }
     }
@@ -89,10 +106,8 @@ class MainActivity : AppCompatActivity() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "test"
-            val descriptionText = "test notification"
+
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val CHANNEL_ID = "test"
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
