@@ -10,11 +10,14 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.widget.Button
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.EXTRA_NOTIFICATION_ID
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.Person
 import androidx.core.app.RemoteInput
+import java.time.LocalDateTime
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -24,12 +27,14 @@ class MainActivity : AppCompatActivity() {
         private const val descriptionText = "test notification"
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         createNotificationChannel()
 
         val btnNotify = findViewById<Button>(R.id.btn_notify)
+        val btnNotifyMsg = findViewById<Button>(R.id.btn_notify_message)
         btnNotify.setOnClickListener {
             // Create intent to open browser to search
             val intent = Intent(Intent.ACTION_WEB_SEARCH).apply {
@@ -97,6 +102,26 @@ class MainActivity : AppCompatActivity() {
             with(NotificationManagerCompat.from(this)) {
                 // notificationId is a unique int for each notification that you must define
                 notify(NOTIFICATION_ID++, builder.build())
+            }
+        }
+        btnNotifyMsg.setOnClickListener {
+            val timestamp1: Long = 10000.toLong()
+            val timestamp2: Long = 20000.toLong()
+            val timestamp3: Long = 30000.toLong()
+            val timestamp4: Long = 40000.toLong()
+            var notification = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setStyle(NotificationCompat.MessagingStyle("Me")
+                    .setConversationTitle("Team lunch")
+                    .setGroupConversation(true)
+                    .addMessage("Hi", timestamp1, "Someone") // Pass in null for user.
+                    .addMessage("What's up?", timestamp2, "Coworker")
+                    .addMessage("Not much", timestamp3, "Me")
+                    .addMessage("How about lunch?", timestamp4, "Coworker"))
+                .setSmallIcon(R.drawable.me)
+
+            with(NotificationManagerCompat.from(this)) {
+                // notificationId is a unique int for each notification that you must define
+                notify(NOTIFICATION_ID++, notification.build())
             }
         }
     }
